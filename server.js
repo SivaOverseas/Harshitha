@@ -1,8 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
-import cors from 'cors';
-import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
@@ -10,13 +8,14 @@ import { createClient } from '@supabase/supabase-js';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// Resolve __dirname in ES Modules
+const port = 80;
+
+// For __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Supabase config
+// Supabase setup
 const SUPABASE_URL = "https://gyatbfarirtvqupmxbjr.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
@@ -27,51 +26,54 @@ if (!SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Middleware
-app.use(cors());
-app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Serve static frontend files from 'public' folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root test route
+// Homepage route - serves index.html from public
 app.get('/', (req, res) => {
-  res.send('Siva Backend is live ✅');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Loan application POST handler
+// Loan application form POST route
 app.post('/apply', async (req, res) => {
   try {
     const { name, email, phone, loan_type, loan_amount } = req.body;
 
+    // Basic validation (you can expand this)
     if (!name || !email || !phone || !loan_type || !loan_amount) {
-      return res.status(400).json({ message: 'All fields are required.' });
+      return res.status(400).send('All fields are required.');
     }
 
+    // Insert into Supabase 'loan_applications' table
     const { data, error } = await supabase
       .from('loan_applications')
-      .insert([{ 
-        name, 
-        email, 
-        phone, 
-        loan_type, 
-        loan_amount: Number(loan_amount) 
-      }]);
+      .insert([
+        { 
+          name, 
+          email, 
+          phone, 
+          loan_type, 
+          loan_amount: Number(loan_amount) 
+        }
+      ]);
 
     if (error) {
-      console.error('❌ Supabase insert error:', error);
-      return res.status(500).json({ message: 'Error saving application.' });
+      console.error('Supabase insert error:', error);
+      return res.status(500).send('Error saving application.');
     }
 
-    console.log('✅ Application saved to Supabase:', data);
-    res.status(200).json({ message: 'Application submitted successfully!' });
-
+    res.send('Application submitted successfully!');
   } catch (err) {
-    console.error('❌ Server error:', err);
-    res.status(500).json({ message: 'Server error. Please try again later.' });
+    console.error('Server error:', err);
+    res.status(500).send('Server error.');
   }
 });
 
 // Start server
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+app.listen(80, '0.0.0.0', () => {
+  console.log('Server running on port 80');
 });
+
