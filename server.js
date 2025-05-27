@@ -26,19 +26,32 @@ if (!SUPABASE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Middleware
-app.use(cors());
+// Allowed frontend origins
+const allowedOrigins = ['https://sivaoverseas.com'];
+
+// Configure CORS middleware with allowed origins
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
+
+// Other middleware
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root test route
+// Routes
 app.get('/', (req, res) => {
   res.send('Siva Backend is live ✅');
 });
 
-// Loan application POST handler
 app.post('/apply', async (req, res) => {
   try {
     const { name, email, phone, loan_type, loan_amount } = req.body;
