@@ -14,7 +14,7 @@ document.getElementById('loanForm').addEventListener('submit', async function (e
   const messageEl = document.getElementById('responseMessage');
 
   try {
-    const res = await fetch('https://siva-backend-tbbj.onrender.com', {
+    const res = await fetch('https://siva-backend-tbbj.onrender.com/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
