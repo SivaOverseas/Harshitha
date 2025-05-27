@@ -11,14 +11,14 @@ document.getElementById('loanForm').addEventListener('submit', async function (e
     loan_amount: parseInt(form.loan_amount.value)
   };
 
+  const messageEl = document.getElementById('responseMessage');
+
   try {
-    const res = await fetch('/apply', {
+    const res = await fetch('https://siva-backend-tbbj.onrender.com/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-
-    const messageEl = document.getElementById('responseMessage');
 
     if (res.ok) {
       form.reset();
@@ -26,11 +26,15 @@ document.getElementById('loanForm').addEventListener('submit', async function (e
       messageEl.classList.remove('hidden', 'text-red-600');
       messageEl.classList.add('text-green-600');
     } else {
-      messageEl.textContent = 'Failed to submit application.';
+      const errorData = await res.json();
+      messageEl.textContent = errorData.message || 'Failed to submit application.';
       messageEl.classList.remove('hidden', 'text-green-600');
       messageEl.classList.add('text-red-600');
     }
   } catch (error) {
     console.error('Submission error:', error);
+    messageEl.textContent = 'An error occurred. Please try again later.';
+    messageEl.classList.remove('hidden', 'text-green-600');
+    messageEl.classList.add('text-red-600');
   }
 });
