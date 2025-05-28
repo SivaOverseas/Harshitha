@@ -1,36 +1,22 @@
-document.getElementById('loanForm').addEventListener('submit', async function (e) {
-  e.preventDefault();
+const express = require('express');
+const app = express();
+const path = require('path');
 
-  const form = e.target;
+app.use(express.static('public')); // Serve static frontend files
+app.use(express.json()); // Parse JSON body
 
-  const data = {
-    name: form.name.value,
-    email: form.email.value,
-    phone: form.phone.value,
-    loan_type: form.loan_type.value,
-    loan_amount: parseInt(form.loan_amount.value)
-  };
+// Endpoint to handle form submission
+app.post('/apply', (req, res) => {
+  const formData = req.body;
+  console.log('Received application:', formData);
 
-  try {
-    const res = await fetch('/apply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+  // Here you can add logic to store in database, send email, etc.
 
-    const messageEl = document.getElementById('responseMessage');
+  res.status(200).json({ message: 'Application received' });
+});
 
-    if (res.ok) {
-      form.reset();
-      messageEl.textContent = 'Application submitted successfully!';
-      messageEl.classList.remove('hidden', 'text-red-600');
-      messageEl.classList.add('text-green-600');
-    } else {
-      messageEl.textContent = 'Failed to submit application.';
-      messageEl.classList.remove('hidden', 'text-green-600');
-      messageEl.classList.add('text-red-600');
-    }
-  } catch (error) {
-    console.error('Submission error:', error);
-  }
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
